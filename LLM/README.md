@@ -466,15 +466,4 @@ Generated Text
 
 This repository combines **theory + implementation + experimentation** to build a stronger understanding of LLMs.
 
----
-
-## 📚 Learning Resources
-
-* Andrej Karpathy — *Introduction to Large Language Models*
-* Andrej Karpathy — *Let's build GPT: from scratch, in code, spelled out*
-* PyTorch documentation
-* Transformer architecture concepts and experiments
-
----
-
 > **Learning LLMs step by step — from tokens to Transformers.**
