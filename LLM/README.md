@@ -393,50 +393,7 @@ My learning path is:
 13. LLM Applications
 ```
 
----
 
-# 💻 Hands-On Implementations
-
-I am implementing the concepts step by step instead of only studying the theory.
-
-| Topic                | Implementation                   | Status      |
-| -------------------- | -------------------------------- | ----------- |
-| Tokenization         | `tokenization.py`                | ✅ Completed |
-| Embeddings           | `embeddings.py`                  | 🔄 Learning |
-| Positional Encoding  | `positional_encoding.py`         | 🔄 Learning |
-| Self-Attention       | `self_attention.py`              | 🔄 Learning |
-| Multi-Head Attention | `multi_head_attention.py`        | 🔄 Learning |
-| Transformer          | `transformer_from_scratch.ipynb` | 🔄 Learning |
-| Training             | —                                | ⏳ Upcoming  |
-| Text Generation      | —                                | ⏳ Upcoming  |
-
-> The status will be updated as I progress.
-
----
-
-# 📂 Folder Structure
-
-```text
-LLM/
-│
-├── README.md
-│
-├── tokenization.py
-│
-├── embeddings.py
-│
-├── positional_encoding.py
-│
-├── self_attention.py
-│
-├── multi_head_attention.py
-│
-└── transformer_from_scratch.ipynb
-```
-
-More files will be added as I continue learning.
-
----
 
 # 🎯 Goal
 
