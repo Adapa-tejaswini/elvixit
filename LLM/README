@@ -1,0 +1,480 @@
+# 🧠 Large Language Models (LLMs)
+
+> My step-by-step learning journey to understand how Large Language Models work internally — from **tokens and parameters to Transformers and text generation**.
+
+This folder contains my **notes, explanations, experiments, and hands-on implementations** while learning about Large Language Models.
+
+The concepts are based on my learning from **Andrej Karpathy's Introduction to Large Language Models** and related Transformer/LLM experiments.
+
+---
+
+## 📌 What is an LLM?
+
+**LLM stands for Large Language Model.**
+
+An LLM is a neural network trained on a very large amount of text to learn patterns in language and predict what token is likely to come next.
+
+For example:
+
+```text
+The sun rises in the ___
+```
+
+The model may predict:
+
+```text
+east
+```
+
+At its core, an LLM performs **next-token prediction**.
+
+Although the task sounds simple, training a large neural network on enormous amounts of text allows it to learn complex patterns related to language, code, knowledge, and reasoning.
+
+---
+
+# 🧩 The Two-File Mental Model
+
+A useful way to understand an LLM is to think of it as two main components:
+
+```text
+┌─────────────────────────────┐
+│     Parameters / Weights    │
+│                             │
+│   Learned numerical values  │
+└──────────────┬──────────────┘
+               │
+               ▼
+┌─────────────────────────────┐
+│         Model Code          │
+│                             │
+│ Defines how the parameters  │
+│ process input and generate  │
+│ predictions                 │
+└─────────────────────────────┘
+```
+
+### Parameters
+
+Parameters are the learned numerical values inside the neural network.
+
+They are also called:
+
+* Weights
+* Model parameters
+* Learned parameters
+
+During training, these values are adjusted so the model becomes better at predicting the next token.
+
+For example, a model with **70 billion parameters** contains approximately 70 billion learned numerical values.
+
+### Model Code
+
+The model code defines the architecture and operations used to process the input and generate predictions.
+
+A simplified mental model is:
+
+```text
+LLM = Parameters + Model Code
+```
+
+---
+
+# ⚙️ How Does an LLM Learn?
+
+The expensive part of building an LLM is **training**.
+
+A simplified view is:
+
+```text
+Large Amount of Text
+        ↓
+    Tokenization
+        ↓
+     Token IDs
+        ↓
+     Neural Network
+        ↓
+Next-Token Prediction
+        ↓
+    Calculate Loss
+        ↓
+ Update Parameters
+        ↓
+       Repeat
+```
+
+The model repeatedly predicts the next token.
+
+When its prediction differs from the expected token, a **loss** is calculated.
+
+The training process then updates the parameters so that the model can make better predictions.
+
+This process is repeated on a massive amount of training data.
+
+---
+
+# 🚀 Pretraining
+
+**Pretraining** is the initial stage of training a language model.
+
+The model is trained on a huge amount of text using the **next-token prediction** objective.
+
+For example:
+
+```text
+Input:
+
+The capital of France is
+
+Target:
+
+Paris
+```
+
+The model produces probabilities for possible next tokens:
+
+```text
+Paris      → 0.80
+London     → 0.05
+Berlin     → 0.03
+Madrid     → 0.02
+```
+
+Training adjusts the parameters so that the correct token becomes more likely.
+
+Pretraining allows the base model to learn broad patterns and information from its training data.
+
+---
+
+# 🗜️ Training as Compression
+
+One useful mental model is to think of training as a form of **lossy compression**.
+
+```text
+Large Training Dataset
+          ↓
+        Training
+          ↓
+   Learned Parameters
+```
+
+The parameters are **not a copy of the internet**.
+
+Instead, they are learned numerical values that capture patterns from the training data.
+
+---
+
+# 🔤 Tokenization
+
+Before text can be processed by a neural network, it needs to be converted into **tokens**.
+
+For example:
+
+```text
+"I am learning LLMs"
+```
+
+can become:
+
+```text
+["I", "am", "learning", "LLMs"]
+```
+
+These tokens are then mapped to numerical IDs:
+
+```text
+["I", "am", "learning", "LLMs"]
+              ↓
+        [12, 45, 891, 3021]
+```
+
+The neural network processes these numerical representations rather than the original text directly.
+
+### My implementation
+
+```text
+tokenization.py
+```
+
+This is my first hands-on implementation while learning how text is converted into numerical representations.
+
+---
+
+# 🔢 Embeddings
+
+Token IDs are simply identifiers.
+
+The model converts token IDs into **embedding vectors**.
+
+```text
+Token ID
+   ↓
+Embedding Layer
+   ↓
+Vector of Numbers
+```
+
+These vectors provide numerical representations that the neural network can process.
+
+---
+
+# 🤖 Transformers
+
+Modern LLMs are largely based on the **Transformer architecture**.
+
+Transformers introduced **self-attention**, which allows tokens to interact with other tokens in a sequence.
+
+A simplified Transformer can be viewed as:
+
+```text
+Token Embeddings
+       ↓
+Positional Information
+       ↓
+Self-Attention
+       ↓
+Feed-Forward Network
+       ↓
+Residual Connections
+       ↓
+Layer Normalization
+       ↓
+Transformer Block
+       ↓
+Repeated Blocks
+```
+
+---
+
+# 👀 Self-Attention
+
+Self-attention allows the model to determine which tokens are important when processing a particular token.
+
+It uses three important representations:
+
+* **Query (Q)**
+* **Key (K)**
+* **Value (V)**
+
+Simplified flow:
+
+```text
+Input Tokens
+     ↓
+   Q, K, V
+     ↓
+Attention Scores
+     ↓
+Weighted Values
+     ↓
+Context-Aware Representation
+```
+
+This allows the model to use information from surrounding tokens when making predictions.
+
+---
+
+# 🎯 From Base Model to Assistant
+
+A pretrained model is not automatically a helpful chatbot.
+
+The base model primarily learns to predict the continuation of text.
+
+A simplified pipeline is:
+
+```text
+Pretraining
+     ↓
+Base Language Model
+     ↓
+Fine-Tuning
+     ↓
+Instruction Following
+     ↓
+Preference / Alignment Training
+     ↓
+Helpful Assistant
+```
+
+---
+
+# 🔧 Fine-Tuning
+
+**Fine-tuning** is additional training performed on a pretrained model using a more specific dataset.
+
+For example:
+
+```text
+Question:
+Explain photosynthesis simply.
+
+Answer:
+Photosynthesis is the process by which...
+```
+
+Fine-tuning helps the model learn how to follow instructions and perform specific tasks more effectively.
+
+---
+
+# 👥 RLHF
+
+**RLHF** stands for **Reinforcement Learning from Human Feedback**.
+
+Human preferences can be used to help train a model toward responses that people prefer.
+
+A simplified view:
+
+```text
+Model Generates Responses
+          ↓
+Humans Compare Responses
+          ↓
+Preference Information
+          ↓
+Further Training
+          ↓
+More Helpful Responses
+```
+
+---
+
+# ⚠️ Why Do LLMs Hallucinate?
+
+LLMs are trained to predict **likely continuations**, not automatically to verify whether every statement is true.
+
+Therefore, an LLM can sometimes generate information that sounds convincing but is incorrect.
+
+Examples include:
+
+* Fake citations
+* Non-existent APIs
+* Incorrect facts
+* Made-up explanations
+
+A useful mental model is:
+
+```text
+Plausible ≠ True
+```
+
+This is why techniques such as **retrieval, grounding, tools, and careful prompting** can be important when factual accuracy matters.
+
+---
+
+# 🗺️ My LLM Learning Roadmap
+
+My learning path is:
+
+```text
+1.  Tokenization
+        ↓
+2.  Token IDs
+        ↓
+3.  Embeddings
+        ↓
+4.  Positional Encoding
+        ↓
+5.  Self-Attention
+        ↓
+6.  Multi-Head Attention
+        ↓
+7.  Feed-Forward Networks
+        ↓
+8.  Transformer Blocks
+        ↓
+9.  Training
+        ↓
+10. Text Generation
+        ↓
+11. Fine-Tuning
+        ↓
+12. RAG / Retrieval
+        ↓
+13. LLM Applications
+```
+
+---
+
+# 💻 Hands-On Implementations
+
+I am implementing the concepts step by step instead of only studying the theory.
+
+| Topic                | Implementation                   | Status      |
+| -------------------- | -------------------------------- | ----------- |
+| Tokenization         | `tokenization.py`                | ✅ Completed |
+| Embeddings           | `embeddings.py`                  | 🔄 Learning |
+| Positional Encoding  | `positional_encoding.py`         | 🔄 Learning |
+| Self-Attention       | `self_attention.py`              | 🔄 Learning |
+| Multi-Head Attention | `multi_head_attention.py`        | 🔄 Learning |
+| Transformer          | `transformer_from_scratch.ipynb` | 🔄 Learning |
+| Training             | —                                | ⏳ Upcoming  |
+| Text Generation      | —                                | ⏳ Upcoming  |
+
+> The status will be updated as I progress.
+
+---
+
+# 📂 Folder Structure
+
+```text
+LLM/
+│
+├── README.md
+│
+├── tokenization.py
+│
+├── embeddings.py
+│
+├── positional_encoding.py
+│
+├── self_attention.py
+│
+├── multi_head_attention.py
+│
+└── transformer_from_scratch.ipynb
+```
+
+More files will be added as I continue learning.
+
+---
+
+# 🎯 Goal
+
+The goal of this folder is to understand **what happens inside an LLM**, rather than simply using an existing LLM API.
+
+I am learning the concepts step by step:
+
+```text
+Text
+ ↓
+Tokens
+ ↓
+Token IDs
+ ↓
+Embeddings
+ ↓
+Attention
+ ↓
+Transformers
+ ↓
+Training
+ ↓
+Prediction
+ ↓
+Generated Text
+```
+
+This repository combines **theory + implementation + experimentation** to build a stronger understanding of LLMs.
+
+---
+
+## 📚 Learning Resources
+
+* Andrej Karpathy — *Introduction to Large Language Models*
+* Andrej Karpathy — *Let's build GPT: from scratch, in code, spelled out*
+* PyTorch documentation
+* Transformer architecture concepts and experiments
+
+---
+
+> **Learning LLMs step by step — from tokens to Transformers.**
