@@ -92,13 +92,13 @@ Large Amount of Text
         ↓
      Token IDs
         ↓
-     Neural Network
+   Neural Network
         ↓
 Next-Token Prediction
         ↓
     Calculate Loss
         ↓
- Update Parameters
+   Update Parameters
         ↓
        Repeat
 ```
@@ -134,10 +134,10 @@ Paris
 The model produces probabilities for possible next tokens:
 
 ```text
-Paris      → 0.80
-London     → 0.05
-Berlin     → 0.03
-Madrid     → 0.02
+Paris     → 0.80
+London    → 0.05
+Berlin    → 0.03
+Madrid    → 0.02
 ```
 
 Training adjusts the parameters so that the correct token becomes more likely.
@@ -306,9 +306,11 @@ For example:
 
 ```text
 Question:
+
 Explain photosynthesis simply.
 
 Answer:
+
 Photosynthesis is the process by which...
 ```
 
@@ -366,34 +368,48 @@ This is why techniques such as **retrieval, grounding, tools, and careful prompt
 My learning path is:
 
 ```text
-1.  Tokenization
-        ↓
-2.  Token IDs
-        ↓
-3.  Embeddings
-        ↓
-4.  Positional Encoding
-        ↓
-5.  Self-Attention
-        ↓
-6.  Multi-Head Attention
-        ↓
-7.  Feed-Forward Networks
-        ↓
-8.  Transformer Blocks
-        ↓
-9.  Training
-        ↓
+1. Tokenization
+       ↓
+2. Token IDs
+       ↓
+3. Embeddings
+       ↓
+4. Positional Encoding
+       ↓
+5. Self-Attention
+       ↓
+6. Multi-Head Attention
+       ↓
+7. Feed-Forward Networks
+       ↓
+8. Transformer Blocks
+       ↓
+9. Training
+       ↓
 10. Text Generation
-        ↓
+       ↓
 11. Fine-Tuning
-        ↓
+       ↓
 12. RAG / Retrieval
-        ↓
+       ↓
 13. LLM Applications
 ```
 
+---
 
+# 📚 Current Progress
+
+I am currently building my understanding step by step through:
+
+* Conceptual notes
+* Python implementations
+* Tokenization experiments
+* Transformer concepts
+* Hands-on learning exercises
+
+More implementations and **Jupyter notebooks (`.ipynb`)** will be added as I continue learning.
+
+---
 
 # 🎯 Goal
 
