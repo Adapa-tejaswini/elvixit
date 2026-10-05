@@ -1,0 +1,30 @@
+name: React CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - github-actions
+
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Check Node version
+        run: node --version
+
+      - name: Check npm version
+        run: npm --version
