@@ -1,0 +1,9 @@
+Artificial intelligence is a field of computer science.
+Machine learning allows computers to learn from data.
+Deep learning uses neural networks to solve complex problems.
+Natural language processing allows computers to understand human language.
+Large language models learn patterns from large amounts of text.
+Transformers are neural networks designed to process sequences.
+Attention allows a model to understand relationships between words.
+Artificial intelligence is changing the way people use computers.
+Machine learning is used in healthcare, finance, education, and technology.
