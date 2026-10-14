@@ -1,0 +1,359 @@
+{
+  "name": "sample workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 6
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -880,
+        192
+      ],
+      "id": "d43a0e86-8bd0-467c-9a9f-133135253d56",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "resource": "all",
+        "additionalFields": {
+          "keyword": "AI",
+          "tags": [
+            "story"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.hackerNews",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        400
+      ],
+      "id": "85747d31-ba33-417f-acc6-ff416ec296a8",
+      "name": "Get many items"
+    },
+    {
+      "parameters": {
+        "query": "Find recent AI news that is shocking, unexpected, surprising, or a \"first ever\" achievement.",
+        "options": {
+          "topic": "news",
+          "max_results": 5,
+          "days": 1
+        }
+      },
+      "type": "@tavily/n8n-nodes-tavily.tavily",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        -48
+      ],
+      "id": "70590c97-5ad3-4371-a27a-688434384ecb",
+      "name": "search controvercy",
+      "credentials": {
+        "tavilyApi": {
+          "id": "1pUAmaEiWM9LbmxB",
+          "name": "Tavily account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "query": "Recent major tech layoffs and job cuts",
+        "options": {
+          "topic": "news",
+          "max_results": 5,
+          "days": 1
+        }
+      },
+      "type": "@tavily/n8n-nodes-tavily.tavily",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        -272
+      ],
+      "id": "a34408d1-2810-4602-b6cf-396147f801be",
+      "name": "Search",
+      "credentials": {
+        "tavilyApi": {
+          "id": "1pUAmaEiWM9LbmxB",
+          "name": "Tavily account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "query": "Latest software engineering job openings and hiring updates",
+        "options": {
+          "topic": "news",
+          "max_results": 5,
+          "days": 1
+        }
+      },
+      "type": "@tavily/n8n-nodes-tavily.tavily",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        -496
+      ],
+      "id": "d5f854cb-423f-492f-869c-c3a169f1669f",
+      "name": "Search1",
+      "credentials": {
+        "tavilyApi": {
+          "id": "1pUAmaEiWM9LbmxB",
+          "name": "Tavily account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "numberInputs": 4
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        48,
+        -96
+      ],
+      "id": "ba2bb893-9599-4292-a29a-56956d84ba38",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nlet formattedData = \"\";\nlet count = 0;\nconst MAX_ITEMS = 12;\n\nfor (const item of items) {\n  const data = item.json;\n\n  // Tavily results\n  if (Array.isArray(data.results)) {\n    for (const result of data.results) {\n      if (count >= MAX_ITEMS) break;\n\n      formattedData += `SOURCE: Web\nTITLE: ${result.title || \"No title\"}\nCONTENT: ${(result.content || \"\").slice(0, 400)}\nURL: ${result.url || \"No URL\"}\n-------------------------\n`;\n\n      count++;\n    }\n  }\n\n  // Hacker News results\n  if (Array.isArray(data.hits)) {\n    for (const story of data.hits) {\n      if (count >= MAX_ITEMS) break;\n\n      formattedData += `SOURCE: HackerNews\nTITLE: ${story.title || \"No title\"}\nPOINTS: ${story.points || 0}\nCOMMENTS: ${story.num_comments || 0}\nURL: ${story.url || `https://news.ycombinator.com/item?id=${story.objectID}`}\n-------------------------\n`;\n\n      count++;\n    }\n  }\n\n  if (count >= MAX_ITEMS) break;\n}\n\nreturn [\n  {\n    json: {\n      formattedData,\n      sourceCount: count\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        -48
+      ],
+      "id": "11744717-1781-4b10-99ce-f31cc85aa2d5",
+      "name": "Format Data for LLM"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI news curator.\n\nYour ONLY job is to extract AI-related news stories from the NEWS DATA below.\n\nReturn ONLY stories that are clearly about:\n- artificial intelligence\n- AI companies\n- AI models\n- AI products\n- AI jobs or AI-related layoffs\n- AI failures\n- AI regulation\n- major AI developments\n\nIgnore unrelated technology, normal job listings, healthcare, finance, etc.\n\nSelect a maximum of 10 stories.\n\nFor EVERY selected story, output EXACTLY this structure:\n\nSTORY\nHEADLINE: short headline\nWTF SCORE: number from 1-10\nSOURCE: Web or HackerNews\nWHY: one short sentence\nIDEA: one short sentence\nURL: exact URL from the NEWS DATA\nEND STORY\n\nRules:\n1. Do NOT write an introduction.\n2. Do NOT write a summary.\n3. Do NOT use numbered lists.\n4. Do NOT use markdown.\n5. Do NOT add anything before the first STORY.\n6. Do NOT add anything after the last END STORY.\n7. Never invent a URL.\n8. The URL MUST come directly from the NEWS DATA.\n9. If a story is not clearly AI-related, ignore it.\n10. Return fewer stories rather than including unrelated stories.\n\nNEWS DATA:\n\n{{ $json.formattedData }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are an AI news curator.  Analyze the AI news data below and select the 10 most interesting and surprising stories.  Prioritize: - Unexpected AI developments - AI doing something unusual - AI replacing or affecting jobs - AI controversies - AI failures or strange behavior - Major AI company developments - Stories that could be interesting for social media content  Avoid: - Generic AI announcements - Boring product updates - Ordinary funding news - Duplicate stories  Only select stories that are genuinely interesting.  For each selected story, output exactly:  1) HEADLINE: Short, attention-grabbing headline WTF SCORE: Number from 1-10 SOURCE: Web or HackerNews WHY: One simple sentence explaining why it is interesting IDEA: One sentence describing a possible content angle URL: The exact URL from the provided data  IMPORTANT: - Use ONLY URLs provided in the data. - Never invent a URL. - Do not create fake links. - Do not use search URLs. - Return up to 10 stories.  Here is the news data:  {{ $json.formattedData }}"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        528,
+        -48
+      ],
+      "id": "c7205065-4f89-439a-aa46-0f2e45fe8cf5",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "=llama3.2:3b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        576,
+        160
+      ],
+      "id": "55f19268-a18e-446b-90b5-77a50f2f95bb",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "JYzpoeNnyLVkZB8H",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\n// Get AI output\nconst text =\n  input.text ||\n  input.output ||\n  input.response ||\n  \"\";\n\nconst lines = text.split(\"\\n\");\n\nlet stories = [];\nlet current = {};\n\nfor (const line of lines) {\n  const trimmed = line.trim();\n\n  if (/^\\d+\\)/.test(trimmed)) {\n    if (Object.keys(current).length > 0) {\n      stories.push(current);\n    }\n\n    current = {\n      headline: trimmed.replace(/^\\d+\\)\\s*/, \"\")\n    };\n  } else if (trimmed.startsWith(\"HEADLINE:\")) {\n    current.headline = trimmed.replace(\"HEADLINE:\", \"\").trim();\n  } else if (trimmed.startsWith(\"WTF SCORE:\")) {\n    current.score = trimmed.replace(\"WTF SCORE:\", \"\").trim();\n  } else if (trimmed.startsWith(\"SOURCE:\")) {\n    current.source = trimmed.replace(\"SOURCE:\", \"\").trim();\n  } else if (trimmed.startsWith(\"WHY:\")) {\n    current.why = trimmed.replace(\"WHY:\", \"\").trim();\n  } else if (trimmed.startsWith(\"IDEA:\")) {\n    current.idea = trimmed.replace(\"IDEA:\", \"\").trim();\n  } else if (trimmed.startsWith(\"URL:\")) {\n    current.url = trimmed.replace(\"URL:\", \"\").trim();\n  }\n}\n\nif (Object.keys(current).length > 0) {\n  stories.push(current);\n}\n\n// Remove incomplete/duplicate stories\nstories = stories\n  .filter(story => story.headline && story.url)\n  .filter(\n    (story, index, self) =>\n      index === self.findIndex(\n        s => s.url === story.url\n      )\n  );\n\nlet storyHTML = \"\";\n\nstories.forEach((story, index) => {\n  const score = parseInt(story.score) || 0;\n\n  storyHTML += `\n  <div style=\"\n    background:#111111;\n    border:1px solid #292929;\n    border-radius:12px;\n    padding:24px;\n    margin-bottom:20px;\n  \">\n\n    <div style=\"\n      font-size:13px;\n      color:#888888;\n      margin-bottom:10px;\n    \">\n      #${index + 1} &nbsp; • &nbsp; ${story.source || \"AI NEWS\"}\n    </div>\n\n    <div style=\"\n      font-size:22px;\n      font-weight:bold;\n      color:#ffffff;\n      line-height:1.4;\n      margin-bottom:12px;\n    \">\n      ${story.headline}\n    </div>\n\n    <div style=\"\n      display:inline-block;\n      background:#1f1f1f;\n      border:1px solid #3a3a3a;\n      border-radius:20px;\n      padding:6px 12px;\n      color:#ffffff;\n      font-size:13px;\n      margin-bottom:16px;\n    \">\n      WTF SCORE: ${score}/10\n    </div>\n\n    <div style=\"\n      color:#cccccc;\n      font-size:15px;\n      line-height:1.6;\n      margin-bottom:14px;\n    \">\n      <strong style=\"color:#ffffff;\">Why it matters:</strong><br>\n      ${story.why || \"Interesting AI development.\"}\n    </div>\n\n    <div style=\"\n      background:#181818;\n      border-left:3px solid #ffffff;\n      padding:12px 15px;\n      margin-bottom:18px;\n      color:#bbbbbb;\n      font-size:14px;\n      line-height:1.5;\n    \">\n      <strong style=\"color:#ffffff;\">Content idea:</strong><br>\n      ${story.idea || \"Create a short post explaining this development.\"}\n    </div>\n\n    <a href=\"${story.url}\"\n       style=\"\n         display:inline-block;\n         background:#ffffff;\n         color:#000000;\n         text-decoration:none;\n         padding:10px 18px;\n         border-radius:7px;\n         font-weight:bold;\n         font-size:14px;\n       \">\n       Read Story →\n    </a>\n\n  </div>\n  `;\n});\n\nconst html = `\n<!DOCTYPE html>\n<html>\n<head>\n<meta charset=\"UTF-8\">\n</head>\n\n<body style=\"\n  margin:0;\n  padding:0;\n  background:#050505;\n  font-family:Arial,Helvetica,sans-serif;\n\">\n\n<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\"\n       style=\"background:#050505;\">\n\n<tr>\n<td align=\"center\">\n\n<table width=\"650\" cellpadding=\"0\" cellspacing=\"0\"\n       style=\"max-width:650px;\">\n\n<tr>\n<td style=\"padding:40px 20px 20px 20px;\">\n\n  <div style=\"\n    color:#ffffff;\n    font-size:32px;\n    font-weight:bold;\n    margin-bottom:8px;\n  \">\n    WTF AI\n  </div>\n\n  <div style=\"\n    color:#888888;\n    font-size:15px;\n    margin-bottom:30px;\n  \">\n    The AI stories that make you say...\n    <strong style=\"color:#ffffff;\">Wait, WTF?</strong>\n  </div>\n\n  ${storyHTML}\n\n  <div style=\"\n    text-align:center;\n    color:#666666;\n    font-size:12px;\n    padding:25px 10px 40px 10px;\n  \">\n    Generated automatically with n8n + Ollama\n    <br>\n    AI News Digest\n  </div>\n\n</td>\n</tr>\n\n</table>\n\n</td>\n</tr>\n\n</table>\n\n</body>\n</html>\n`;\n\nreturn [\n  {\n    json: {\n      subject: `🔥 WTF AI — ${stories.length} AI Stories You Need to See`,\n      html,\n      storyCount: stories.length\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        -48
+      ],
+      "id": "edde6f7b-84e2-4823-8a8f-30dce9b363e2",
+      "name": "formate email"
+    },
+    {
+      "parameters": {
+        "sendTo": "adapatejaswini14@gmail.com",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1136,
+        -48
+      ],
+      "id": "9109d4a0-b551-457f-ab68-40e15f01d432",
+      "name": "Send a message",
+      "webhookId": "43c1f2ac-84b8-4aa7-bdbd-66c977dadba0",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "VeTdOcuWcImGtFlO",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "search controvercy",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Search",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Search1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get many items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many items": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Search1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "search controvercy": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Format Data for LLM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Data for LLM": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "formate email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "formate email": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "6971118d-6395-4edf-a85e-ce5b5b1737e6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4d7a6d939e6a1e3ad17165ba73a704b6f312f6c198160a99f221109fe242349b"
+  },
+  "id": "usYQcQpqUiZJEJix",
+  "tags": []
+}
